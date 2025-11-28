@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block header %}Edit Prescription{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <!-- Header Section -->
+  <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-8 text-white">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <div class="bg-blue-500 p-3 rounded-lg mr-4">
+          <i class="fa-solid fa-edit text-white text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold mb-1">Edit Prescription</h1>
+          <p class="text-blue-100">Update prescription details and instructions</p>
+        </div>
+      </div>
+      {% if prescription.date_issued %}
+      <div class="text-right text-sm">
+        <p class="text-blue-100">Originally issued:</p>
+        <p class="font-semibold">{{ prescription.date_issued|date:"M d, Y" }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main Form Card -->
+  <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+    <!-- Patient Information Header -->
+    {% if prescription.patient %}
+    <div class="bg-blue-50 border-b border-blue-200 px-6 py-4">
+      <div class="flex items-center">
+        <div class="bg-blue-100 p-2 rounded-full mr-3">
+          <i class="fa-solid fa-user text-blue-600"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold text-blue-800">Patient: {{ prescription.patient.username }}</h3>
+          <p class="text-sm text-blue-600">{{ prescription.patient.email|default:"Email not available" }}</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Form Content -->
+    <form method="post" class="p-6">
+      {% csrf_token %}
+      
+      <div class="space-y-6">
+        <!-- Medicine Name -->
+        <div>
+          <label for="medicine" class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fa-solid fa-pills mr-1"></i>
+            Medicine Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="medicine"
+            name="medicine"
+            value="{{ form.medicine.value|default_if_none:'' }}"
+            placeholder="e.g., Amoxicillin, Paracetamol, Ibuprofen"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+            required
+          />
+          {% for error in form.medicine.errors %}
+          <p class="mt-1 text-sm text-red-600">
+            <i class="fa-solid fa-exclamation-circle mr-1"></i>
+            {{ error }}
+          </p>
+          {% endfor %}
+        </div>
+
+        <!-- Dosage and Frequency Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Dosage -->
+          <div>
+            <label for="dosage" class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fa-solid fa-weight mr-1"></i>
+              Dosage <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="dosage"
+              name="dosage"
+              value="{{ form.dosage.value|default_if_none:'' }}"
+              placeholder="e.g., 500mg, 10ml, 1 tablet"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+              required
+            />
+            {% for error in form.dosage.errors %}
+            <p class="mt-1 text-sm text-red-600">
+              <i class="fa-solid fa-exclamation-circle mr-1"></i>
+              {{ error }}
+            </p>
+            {% endfor %}
+          </div>
+
+          <!-- Frequency -->
+          <div>
+            <label for="frequency" class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fa-solid fa-clock mr-1"></i>
+              Frequency
+            </label>
+            <select
+              id="frequency"
+              name="frequency"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+            >
+              <option value="">Select frequency</option>
+              <option value="once_daily" {% if form.frequency.value == 'once_daily' %}selected{% endif %}>Once daily</option>
+              <option value="twice_daily" {% if form.frequency.value == 'twice_daily' %}selected{% endif %}>Twice daily</option>
+              <option value="three_times_daily" {% if form.frequency.value == 'three_times_daily' %}selected{% endif %}>Three times daily</option>
+              <option value="four_times_daily" {% if form.frequency.value == 'four_times_daily' %}selected{% endif %}>Four times daily</option>
+              <option value="as_needed" {% if form.frequency.value == 'as_needed' %}selected{% endif %}>As needed</option>
+              <option value="other" {% if form.frequency.value == 'other' %}selected{% endif %}>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Duration -->
+        <div>
+          <label for="duration" class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fa-solid fa-calendar mr-1"></i>
+            Treatment Duration
+          </label>
+          <input
+            type="text"
+            id="duration"
+            name="duration"
+            value="{{ form.duration.value|default_if_none:'' }}"
+            placeholder="e.g., 7 days, 2 weeks, 1 month"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+          />
+          <p class="mt-1 text-xs text-gray-500">How long should the patient continue this medication?</p>
+        </div>
+
+        <!-- Instructions -->
+        <div>
+          <label for="instructions" class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fa-solid fa-info-circle mr-1"></i>
+            Patient Instructions <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            id="instructions"
+            name="instructions"
+            rows="6"
+            placeholder="Provide detailed instructions:
+- Take with or without food
+- Take at specific times
+- Any foods/activities to avoid
+- What to do if dose is missed
+- When to contact doctor..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 resize-none"
+            required
+          >{{ form.instructions.value|default_if_none:'' }}</textarea>
+          {% for error in form.instructions.errors %}
+          <p class="mt-1 text-sm text-red-600">
+            <i class="fa-solid fa-exclamation-circle mr-1"></i>
+            {{ error }}
+          </p>
+          {% endfor %}
+        </div>
+
+        <!-- Doctor Notes (Internal) -->
+        <div>
+          <label for="doctor_notes" class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fa-solid fa-note-sticky mr-1"></i>
+            Doctor Notes (Internal)
+          </label>
+          <textarea
+            id="doctor_notes"
+            name="doctor_notes"
+            rows="3"
+            placeholder="Internal notes for medical records (not visible to patient)..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 resize-none"
+          >{{ form.doctor_notes.value|default_if_none:'' }}</textarea>
+          <p class="mt-1 text-xs text-gray-500">These notes are for your records only</p>
+        </div>
+
+        <!-- Warning Section -->
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div class="flex items-start">
+            <i class="fa-solid fa-exclamation-triangle text-red-600 mt-1 mr-3"></i>
+            <div class="text-sm">
+              <h4 class="font-semibold text-red-800 mb-1">Prescription Safety</h4>
+              <ul class="text-red-700 space-y-1">
+                <li>• Verify patient allergies before prescribing</li>
+                <li>• Check for drug interactions with current medications</li>
+                <li>• Ensure dosage is appropriate for patient's condition</li>
+                <li>• Include clear instructions to prevent misuse</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex items-center justify-between pt-8 border-t border-gray-200">
+        <a
+          href="{% url 'dashboard_doctor' %}"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition duration-200"
+        >
+          <i class="fa-solid fa-arrow-left mr-2"></i>
+          Back to Dashboard
+        </a>
+        
+        <div class="flex space-x-3">
+          {% if prescription.id %}
+          <button
+            type="button"
+            class="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-red-50 hover:bg-red-100 transition duration-200"
+            onclick="if(confirm('Are you sure you want to delete this prescription?')) { /* Add delete logic */ }"
+          >
+            <i class="fa-solid fa-trash mr-2"></i>
+            Delete
+          </button>
+          {% endif %}
+          
+          <button
+            type="button"
+            class="inline-flex items-center px-4 py-2 border border-blue-300 text-sm font-medium rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 transition duration-200"
+          >
+            <i class="fa-solid fa-eye mr-2"></i>
+            Preview
+          </button>
+          
+          <button
+            type="submit"
+            class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
+          >
+            <i class="fa-solid fa-save mr-2"></i>
+            {% if prescription.id %}Update Prescription{% else %}Save Prescription{% endif %}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Recent Prescriptions (for reference) -->
+  {% if recent_prescriptions %}
+  <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="p-6 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-800">
+        <i class="fa-solid fa-history mr-2 text-gray-600"></i>
+        Recent Prescriptions (for reference)
+      </h3>
+    </div>
+    <div class="p-6">
+      <div class="space-y-3">
+        {% for recent in recent_prescriptions|slice:":3" %}
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div class="flex items-center">
+            <i class="fa-solid fa-pills text-purple-600 mr-3"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-800">{{ recent.medicine }}</p>
+              <p class="text-xs text-gray-600">{{ recent.dosage }} - {{ recent.patient.username }}</p>
+            </div>
+          </div>
+          <button class="text-blue-600 hover:text-blue-700 text-xs">
+            <i class="fa-solid fa-copy mr-1"></i>
+            Copy Details
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

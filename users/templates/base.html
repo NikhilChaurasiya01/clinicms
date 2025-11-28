@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Clinic Management System{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome (for icons) -->
+    <script
+      src="https://kit.fontawesome.com/a2d9d6a4a0.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <!-- Sidebar + Content Wrapper -->
+    <div class="flex h-screen">
+      <!-- CoreUI Style Sidebar -->
+      <aside class="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
+        <!-- Sidebar Header -->
+        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700">
+          <div class="flex items-center space-x-2 text-white">
+            <i class="fa-solid fa-hospital text-xl"></i>
+            <span class="text-xl font-bold">ClinicMS</span>
+          </div>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <nav class="flex-1 overflow-y-auto">
+          <ul class="py-2">
+            {% if user.is_authenticated %}
+              {% if user.role == "admin" %}
+                <!-- Admin Navigation -->
+                <li class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Administration</li>
+                <li>
+                  <a href="{% url 'dashboard_admin' %}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors duration-200">
+                    <i class="fa-solid fa-tachometer-alt w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Dashboard</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="/admin/" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors duration-200">
+                    <i class="fa-solid fa-user-gear w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Admin Panel</span>
+                    <span class="ml-auto bg-blue-500 text-white text-xs px-2 py-1 rounded-full">NEW</span>
+                  </a>
+                </li>
+                <li class="nav-group">
+                  <a href="#" class="nav-group-toggle flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors duration-200" onclick="toggleDropdown(this, event)">
+                    <i class="fa-solid fa-users w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>User Management</span>
+                    <i class="fa-solid fa-chevron-down ml-auto text-xs transition-transform duration-200"></i>
+                  </a>
+                  <ul class="nav-group-items hidden bg-gray-50">
+                    <li>
+                      <a href="#" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full mr-3"></span>
+                        <span>Manage Doctors</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full mr-3"></span>
+                        <span>Manage Patients</span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <a href="#" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors duration-200">
+                    <i class="fa-solid fa-chart-bar w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Analytics</span>
+                  </a>
+                </li>
+
+              {% elif user.role == "doctor" %}
+                <!-- Doctor Navigation -->
+                <li class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Medical Practice</li>
+                <li>
+                  <a href="{% url 'dashboard_doctor' %}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-green-600 transition-colors duration-200">
+                    <i class="fa-solid fa-stethoscope w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>My Dashboard</span>
+                  </a>
+                </li>
+
+                <!-- Appointments Section -->
+                <li class="nav-group">
+                  <a href="#" class="nav-group-toggle flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-green-600 transition-colors duration-200" onclick="toggleDropdown(this, event)">
+                    <i class="fa-solid fa-calendar-check w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Appointments</span>
+                    {% comment %} <span class="ml-auto bg-green-500 text-white text-xs px-2 py-1 rounded-full"></span> {% endcomment %}
+                    <i class="fa-solid fa-chevron-down ml-2 text-xs transition-transform duration-200"></i>
+                  </a>
+                  <ul class="nav-group-items hidden bg-gray-50">
+                    <li>
+                      <a href="{% url 'appointments:list_appointments' %}" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full mr-3"></span>
+                        <span>All Appointments</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{% url 'appointments:list_appointments' %}?status=pending" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-yellow-400 rounded-full mr-3"></span>
+                        <span>Pending Appointments</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{% url 'appointments:list_appointments' %}?status=completed" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                        <span>Completed Appointments</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{% url 'doctor_schedule' %}" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
+                        <span>My Schedule</span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+
+                <!-- Patient Records Section -->
+                <li class="nav-group">
+                  <a href="#" class="nav-group-toggle flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-green-600 transition-colors duration-200" onclick="toggleDropdown(this, event)">
+                    <i class="fa-solid fa-file-medical w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Patient Records</span>
+                    <i class="fa-solid fa-chevron-down ml-auto text-xs transition-transform duration-200"></i>
+                  </a>
+                  <ul class="nav-group-items hidden bg-gray-50">
+                    <li>
+                      <a href="{% url 'doctor_patients_list' %}" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full mr-3"></span>
+                        <span>All Patients</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{% url 'doctor_patients_search' %}" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
+                        <span>Search Patients</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{% url 'doctor_medical_history' %}" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                        <span>Medical History</span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+
+                <!-- Prescriptions Section -->
+                <li class="nav-group">
+                  <a href="#" class="nav-group-toggle flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-green-600 transition-colors duration-200" onclick="toggleDropdown(this, event)">
+                    <i class="fa-solid fa-prescription w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Prescriptions</span>
+                    <i class="fa-solid fa-chevron-down ml-auto text-xs transition-transform duration-200"></i>
+                  </a>
+                  <ul class="nav-group-items hidden bg-gray-50">
+                    <li>
+                      <a href="{% url 'prescriptions:list_prescriptions' %}" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full mr-3"></span>
+                        <span>All Prescriptions</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{% url 'prescriptions:active_prescriptions' %}" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                        <span>Active Prescriptions</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="{% url 'prescriptions:templates' %}" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                        <span class="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
+                        <span>Prescription Templates</span>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+
+              {% elif user.role == "patient" %}
+                <!-- Patient Navigation -->
+                <li class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">My Healthcare</li>
+                <li>
+                  <a href="{% url 'dashboard_patient' %}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors duration-200">
+                    <i class="fa-solid fa-user w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>My Dashboard</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="{% url 'appointments:book_appointment' %}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors duration-200">
+                    <i class="fa-solid fa-calendar-plus w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Book Appointment</span>
+                  </a>
+                </li>
+                <a href="{% url 'patient_prescriptions' %}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors duration-200">
+                  <i class="fa-solid fa-pills w-5 h-5 mr-3 text-gray-500"></i>
+                  <span>My Prescriptions</span>
+                </a>
+                <li>
+                  <a href="{% url 'patient_medical_history' %}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-purple-600 transition-colors duration-200">
+                    <i class="fa-solid fa-history w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Medical History</span>
+                  </a>
+                </li>
+              {% endif %}
+
+              <!-- Common Navigation Items -->
+              <li class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mt-6">Account</li>
+              {% if user.role == "doctor" %}
+                <li>
+                  <a href="{% url 'doctor_profile' %}" class="flex items-center px-6 py-3 ...">
+                    <i class="fa-solid fa-user-circle w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Profile Settings</span>
+                  </a>
+                </li>
+                <li>
+                  <a href=" #" id="notification-link" class="flex items-center px-6 py-3 ...">
+                    <i class="fa-solid fa-bell w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Notifications</span>
+                    <span id="notification-count" class="ml-auto bg-yellow-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
+                  </a>
+                </li>
+              {% elif user.role == "patient" %}
+                <li>
+                  <a href="{% url 'patient_profile' %}" class="flex items-center px-6 py-3 ...">
+                    <i class="fa-solid fa-user-circle w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Profile Settings</span>
+                  </a>
+                </li>
+                <li>
+                  <button type="button" id="notification-link" class="flex items-center px-6 py-3 w-full text-left">
+                    <i class="fa-solid fa-bell w-5 h-5 mr-3 text-gray-500"></i>
+                    <span>Notifications</span>
+                    <span id="notification-count" class="ml-auto bg-yellow-500 text-white text-xs px-2 py-1 rounded-full hidden">0</span>
+                  </button>
+                </li>
+
+              {% endif %}
+
+
+            {% else %}
+              <!-- Guest Navigation -->
+              <li class="px-6 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick Access</li>
+              <li>
+                <a href="{% url 'public_dashboard' %}" class="flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors duration-200">
+                  <i class="fa-solid fa-home w-5 h-5 mr-3 text-gray-500"></i>
+                  <span>Home</span>
+                </a>
+              </li>
+              <li class="nav-group">
+                <a href="#" class="nav-group-toggle flex items-center px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors duration-200" onclick="toggleDropdown(this, event)">
+                  <i class="fa-solid fa-sign-in-alt w-5 h-5 mr-3 text-gray-500"></i>
+                  <span>Portal Access</span>
+                  <i class="fa-solid fa-chevron-down ml-auto text-xs transition-transform duration-200"></i>
+                </a>
+                <ul class="nav-group-items hidden bg-gray-50">
+                  <li>
+                    <a href="/portal/admin/" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200">
+                      <span class="w-2 h-2 bg-blue-400 rounded-full mr-3"></span>
+                      <span>Admin Portal</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/portal/doctor/" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-green-600 transition-colors duration-200">
+                      <span class="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                      <span>Doctor Portal</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/portal/patient/" class="flex items-center px-6 py-2 pl-12 text-sm text-gray-600 hover:text-purple-600 transition-colors duration-200">
+                      <span class="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                      <span>Patient Portal</span>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="border-t border-gray-200 mt-auto">
+          {% if user.is_authenticated %}
+            <div class="px-6 py-4">
+              <div class="text-sm text-gray-600 mb-2">Logged in as:</div>
+              <div class="font-semibold text-gray-800 mb-3">{{ user.username }}</div>
+              <a
+                href="{% url 'logout' %}"
+                class="flex items-center justify-center w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors duration-200"
+              >
+                <i class="fa-solid fa-sign-out-alt mr-2"></i>
+                Logout
+              </a>
+            </div>
+          {% else %}
+            <div class="px-6 py-4">
+              <a
+                href="{% url 'public_dashboard' %}"
+                class="flex items-center justify-center w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors duration-200 mb-2"
+              >
+                <i class="fa-solid fa-sign-in-alt mr-2"></i>
+                Login
+              </a>
+              <div class="text-xs text-center text-gray-500">
+                <a href="#" class="hover:text-blue-600">Need help?</a>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Security Notice -->
+          <div class="px-6 py-3 bg-green-50 border-t border-green-200">
+            <div class="flex items-center text-green-600">
+              <i class="fa-solid fa-shield-alt w-4 h-4 mr-2"></i>
+              <span class="text-xs font-medium">Secure & Protected</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 flex flex-col">
+        <!-- Top Navbar -->
+        <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+          <h1 class="text-xl font-semibold text-gray-800">
+            {% block header %}{% endblock %}
+          </h1>
+          {% if user.is_authenticated %}
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-600">Role: {{ user.role|title }}</span>
+            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+              <span class="text-white text-sm font-semibold">{{ user.username|first|upper }}</span>
+            </div>
+          </div>
+          {% endif %}
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto p-6">
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
+
+    <!-- JavaScript for dropdown functionality -->
+    <script>
+      function toggleDropdown(element, event) {
+        event.preventDefault();
+        const navGroup = element.closest('.nav-group');
+        const items = navGroup.querySelector('.nav-group-items');
+        const chevron = element.querySelector('.fa-chevron-down');
+        
+        if (items.classList.contains('hidden')) {
+          items.classList.remove('hidden');
+          chevron.style.transform = 'rotate(180deg)';
+          navGroup.classList.add('show');
+        } else {
+          items.classList.add('hidden');
+          chevron.style.transform = 'rotate(0deg)';
+          navGroup.classList.remove('show');
+        }
+      }
+
+      // Close dropdowns when clicking outside
+      document.addEventListener('click', function(event) {
+        if (!event.target.closest('.nav-group')) {
+          document.querySelectorAll('.nav-group-items').forEach(function(items) {
+            items.classList.add('hidden');
+          });
+          document.querySelectorAll('.nav-group .fa-chevron-down').forEach(function(chevron) {
+            chevron.style.transform = 'rotate(0deg)';
+          });
+          document.querySelectorAll('.nav-group').forEach(function(group) {
+            group.classList.remove('show');
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

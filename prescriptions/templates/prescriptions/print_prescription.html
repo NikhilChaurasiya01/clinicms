@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription - {{ prescription.patient.first_name }} {{ prescription.patient.last_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body { 
+                margin: 0; 
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .no-print { display: none !important; }
+            .page-break { page-break-after: always; }
+        }
+        
+        @page {
+            margin: 0.5in;
+        }
+    </style>
+</head>
+<body class="bg-white text-black font-sans">
+    <!-- Print Button (hidden when printing) -->
+    <div class="no-print fixed top-4 right-4 z-10">
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-lg">
+            <i class="fas fa-print mr-2"></i>Print Prescription
+        </button>
+    </div>
+
+    <div class="max-w-4xl mx-auto bg-white">
+        <!-- Prescription Header -->
+        <div class="bg-blue-600 text-white px-8 py-6 text-center">
+            <h1 class="text-2xl font-bold mb-2">ClinicMS Medical Center</h1>
+            <p class="text-sm opacity-90 mb-1">123 Medical Plaza, Healthcare District</p>
+            <p class="text-sm opacity-90 mb-3">Phone: (555) 123-4567 | Email: info@clinicms.com</p>
+            <div class="text-lg font-semibold tracking-wider border-t border-blue-400 pt-3">
+                PRESCRIPTION
+            </div>
+        </div>
+
+        <!-- Prescription Content -->
+        <div class="px-8 py-6">
+            <!-- Doctor and Patient Information -->
+            <div class="grid grid-cols-2 gap-8 mb-8 border-b pb-6">
+                <!-- Doctor Information -->
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    <h3 class="text-blue-700 font-bold text-lg mb-3 border-b border-gray-200 pb-2">
+                        <i class="fas fa-user-md mr-2"></i>Prescribing Doctor
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex">
+                            <span class="font-semibold text-gray-700 w-20">Name:</span>
+                            <span>Dr. {{ prescription.doctor.first_name }} {{ prescription.doctor.last_name }}</span>
+                        </div>
+                        <div class="flex">
+                            <span class="font-semibold text-gray-700 w-20">Email:</span>
+                            <span>{{ prescription.doctor.email }}</span>
+                        </div>
+                        <div class="flex">
+                            <span class="font-semibold text-gray-700 w-20">License:</span>
+                            <span>{{ prescription.doctor.license_number|default:"MD-123456" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Information -->
+                <div class="bg-gray-50 p-4 rounded-lg border">
+                    <h3 class="text-green-700 font-bold text-lg mb-3 border-b border-gray-200 pb-2">
+                        <i class="fas fa-user mr-2"></i>Patient Information
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex">
+                            <span class="font-semibold text-gray-700 w-20">Name:</span>
+                            <span>{{ prescription.patient.first_name }} {{ prescription.patient.last_name }}</span>
+                        </div>
+                        <div class="flex">
+                            <span class="font-semibold text-gray-700 w-20">Email:</span>
+                            <span>{{ prescription.patient.email }}</span>
+                        </div>
+                        <div class="flex">
+                            <span class="font-semibold text-gray-700 w-20">DOB:</span>
+                            <span>{{ prescription.patient.date_of_birth|date:"M d, Y"|default:"N/A" }}</span>
+                        </div>
+                        <div class="flex">
+                            <span class="font-semibold text-gray-700 w-20">Phone:</span>
+                            <span>{{ prescription.patient.phone|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prescription Metadata -->
+            <div class="mb-6 text-right text-sm text-gray-600">
+                <div class="bg-gray-100 p-3 rounded inline-block">
+                    <div><strong>Prescription ID:</strong> #{{ prescription.id }}</div>
+                    <div><strong>Date Issued:</strong> {{ prescription.date_issued|date:"F d, Y" }}</div>
+                    <div><strong>Valid Until:</strong> {{ prescription.expiry_date|date:"F d, Y"|default:"No expiry" }}</div>
+                </div>
+            </div>
+
+            <!-- Medications Section -->
+            <div class="mb-8">
+                <div class="bg-blue-700 text-white px-6 py-3 text-lg font-bold mb-4">
+                    <i class="fas fa-pills mr-2"></i>PRESCRIBED MEDICATIONS
+                </div>
+
+                <div class="border border-gray-300 rounded-lg overflow-hidden">
+                    <div class="bg-white p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-black mb-2">{{ prescription.medicine }}</h3>
+                                {% if prescription.dosage %}
+                                    <div class="mb-3">
+                                        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                            {{ prescription.dosage }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if prescription.instructions %}
+                            <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                                <h4 class="font-semibold text-blue-800 mb-2">Instructions:</h4>
+                                <p class="text-blue-700">{{ prescription.instructions }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagnosis Section -->
+            {% if prescription.diagnosis %}
+            <div class="mb-8">
+                <div class="bg-gray-100 p-4 rounded-lg border-l-4 border-blue-500">
+                    <h4 class="font-bold text-gray-800 mb-2">
+                        <i class="fas fa-stethoscope mr-2 text-blue-600"></i>Diagnosis
+                    </h4>
+                    <p class="text-gray-700">{{ prescription.diagnosis }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Notes Section -->
+            {% if prescription.notes %}
+            <div class="mb-8">
+                <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                    <h4 class="font-bold text-yellow-800 mb-2">
+                        <i class="fas fa-sticky-note mr-2"></i>Additional Notes
+                    </h4>
+                    <p class="text-yellow-700">{{ prescription.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- General Instructions -->
+            <div class="bg-blue-50 p-6 rounded-lg border border-blue-200 mb-8">
+                <h4 class="font-bold text-blue-800 mb-3">
+                    <i class="fas fa-info-circle mr-2"></i>General Instructions
+                </h4>
+                <ul class="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                    <li>Take medications exactly as prescribed</li>
+                    <li>Complete the full course of treatment even if you feel better</li>
+                    <li>Do not share medications with others</li>
+                    <li>Store medications in a cool, dry place away from children</li>
+                    <li>Contact your doctor if you experience any adverse effects</li>
+                    <li>Bring this prescription when visiting the pharmacy</li>
+                </ul>
+            </div>
+
+            <!-- Footer with Signatures -->
+            <div class="border-t pt-6">
+                <div class="grid grid-cols-2 gap-8">
+                    <!-- Doctor Signature -->
+                    <div class="text-center">
+                        <div class="border-b-2 border-gray-400 w-48 mx-auto mb-2 h-12"></div>
+                        <p class="font-semibold">Dr. {{ prescription.doctor.first_name }} {{ prescription.doctor.last_name }}</p>
+                        <p class="text-sm text-gray-600">Prescribing Physician</p>
+                        <p class="text-xs text-gray-500">{{ prescription.date_issued|date:"F d, Y" }}</p>
+                    </div>
+
+                    <!-- Medical Center Stamp/Seal Area -->
+                    <div class="text-center">
+                        <div class="w-24 h-24 border-2 border-gray-400 rounded-full mx-auto mb-2 flex items-center justify-center">
+                            <div class="text-xs text-gray-600 text-center">
+                                CLINIC<br>SEAL
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 font-semibold">Official Medical Seal</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Information -->
+            <div class="mt-8 pt-4 border-t text-center text-xs text-gray-500">
+                <p>This prescription is valid for 30 days from the date of issue unless otherwise specified.</p>
+                <p>For any queries, contact ClinicMS at (555) 123-4567 or visit www.clinicms.com</p>
+                <p class="mt-2 font-semibold">** This is a computer-generated prescription **</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print JavaScript -->
+    <script>
+        // Auto-print when accessed with print=true parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('print') === 'true') {
+            window.onload = function() {
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            }
+        }
+
+        // Print function for manual trigger
+        function printPrescription() {
+            window.print();
+        }
+
+        // Add keyboard shortcut for printing
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-xl">
+  <h1 class="text-2xl font-bold mb-6 text-gray-800">Appointment Details</h1>
+
+  <!-- Role-based info -->
+  {% if request.user.role == "doctor" %}
+    <p class="mb-2"><span class="font-semibold">Patient:</span> 
+      {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+    </p>
+    <p class="mb-2"><span class="font-semibold">Symptoms:</span> 
+      {{ appointment.symptoms|default:"No symptoms provided" }}
+    </p>
+  {% elif request.user.role == "patient" %}
+    <p class="mb-2"><span class="font-semibold">Doctor:</span> 
+      Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}
+    </p>
+  {% endif %}
+
+  <!-- Common info -->
+  <p class="mb-2"><span class="font-semibold">Date & Time:</span> 
+    {{ appointment.appointment_datetime|date:"M d, Y H:i" }}
+  </p>
+  <p class="mb-2"><span class="font-semibold">Status:</span> 
+    {{ appointment.get_status_display }}
+  </p>
+
+  {% if appointment.notes %}
+    <p class="mb-2"><span class="font-semibold">Notes:</span> {{ appointment.notes }}</p>
+  {% endif %}
+
+  <hr class="my-4">
+
+  <!-- Action buttons -->
+  <div class="flex flex-wrap gap-3">
+    {% if request.user.role == "patient" %}
+      <!-- Patient actions -->
+      <a href="{% url 'appointments:reschedule_appointment' appointment.id %}"
+         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+        Reschedule
+      </a>
+      <a href="{% url 'appointments:cancel_appointment' appointment.id %}"
+         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+        Cancel
+      </a>
+    {% elif request.user.role == "doctor" %}
+      <!-- Doctor actions (optional: add more later) -->
+      <a href="{% url 'appointments:list_appointments' %}"
+         class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+        Back to My Appointments
+      </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

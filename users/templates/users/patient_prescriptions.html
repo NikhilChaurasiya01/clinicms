@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}My Prescriptions - Clinic Management System{% endblock %}
+
+{% block header %}My Prescriptions{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">My Prescriptions</h2>
+                <p class="text-gray-600">Total Prescriptions: {{ total_prescriptions }}</p>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <form method="GET" class="flex flex-wrap gap-4 mb-6">
+            <!-- Search Bar -->
+            <div class="flex-1 min-w-64">
+                <div class="relative">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ search_query|default:'' }}"
+                           placeholder="Search by medicine, doctor, or instructions..."
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- Date Filter -->
+            <select name="date_filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                <option value="">All Time</option>
+                <option value="week" {% if date_filter == 'week' %}selected{% endif %}>Last Week</option>
+                <option value="month" {% if date_filter == 'month' %}selected{% endif %}>Last Month</option>
+                <option value="year" {% if date_filter == 'year' %}selected{% endif %}>Last Year</option>
+            </select>
+
+            <!-- Filter Button -->
+            <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                <i class="fas fa-filter mr-2"></i>Filter
+            </button>
+
+            <!-- Clear Filters -->
+            {% if search_query or date_filter %}
+            <a href="{% url 'patient_prescriptions' %}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                <i class="fas fa-times mr-2"></i>Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Prescriptions List -->
+    <div class="space-y-4">
+        {% if prescriptions %}
+            {% for prescription in prescriptions %}
+            <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-pills text-purple-600 mr-3"></i>
+                                <h3 class="text-xl font-semibold text-gray-800">{{ prescription.medicine }}</h3>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-1">
+                                        <i class="fas fa-user-md mr-2"></i>
+                                        <strong>Doctor:</strong> Dr. {{ prescription.doctor.get_full_name|default:prescription.doctor.username }}
+                                    </p>
+                                    <p class="text-sm text-gray-600 mb-1">
+                                        <i class="fas fa-calendar mr-2"></i>
+                                        <strong>Date Issued:</strong> {{ prescription.date_issued|date:"F d, Y" }}
+                                    </p>
+                                    {% if prescription.dosage %}
+                                    <p class="text-sm text-gray-600 mb-1">
+                                        <i class="fas fa-prescription-bottle mr-2"></i>
+                                        <strong>Dosage:</strong> {{ prescription.dosage }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div>
+                                    {% if prescription.appointment %}
+                                    <p class="text-sm text-gray-600 mb-1">
+                                        <i class="fas fa-stethoscope mr-2"></i>
+                                        <strong>Appointment:</strong> {{ prescription.appointment.appointment_date|date:"F d, Y" }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if prescription.instructions %}
+                            <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    <strong>Instructions:</strong>
+                                </p>
+                                <p class="text-sm text-gray-700">{{ prescription.instructions }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Download Button -->
+                        <div class="ml-6 flex flex-col space-y-2">
+                            <a href="{% url 'download_prescription' prescription.id %}" 
+                               class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-center">
+                                <i class="fas fa-download mr-2"></i>Download
+                            </a>
+                            
+                            <!-- Status Badge -->
+                            <div class="text-center">
+                                {% if prescription.date_issued|timesince|slice:":1" == "0" %}
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                                        Recent
+                                    </span>
+                                {% else %}
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                        {{ prescription.date_issued|timesince }} ago
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if prescriptions.has_other_pages %}
+            <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+                <nav class="flex justify-center">
+                    <div class="flex space-x-2">
+                        {% if prescriptions.has_previous %}
+                            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}" 
+                               class="px-3 py-2 text-sm text-gray-500 hover:text-purple-600">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                            <a href="?page={{ prescriptions.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}" 
+                               class="px-3 py-2 text-sm text-gray-500 hover:text-purple-600">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        {% endif %}
+
+                        <span class="px-4 py-2 text-sm bg-purple-600 text-white rounded">
+                            Page {{ prescriptions.number }} of {{ prescriptions.paginator.num_pages }}
+                        </span>
+
+                        {% if prescriptions.has_next %}
+                            <a href="?page={{ prescriptions.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}" 
+                               class="px-3 py-2 text-sm text-gray-500 hover:text-purple-600">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                            <a href="?page={{ prescriptions.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}" 
+                               class="px-3 py-2 text-sm text-gray-500 hover:text-purple-600">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- No Prescriptions -->
+            <div class="bg-white rounded-lg shadow-md p-12 text-center">
+                <i class="fas fa-prescription-bottle text-gray-300 text-6xl mb-6"></i>
+                <h3 class="text-xl font-semibold text-gray-600 mb-4">No Prescriptions Found</h3>
+                {% if search_query or date_filter %}
+                    <p class="text-gray-500 mb-6">No prescriptions match your current filters.</p>
+                    <a href="{% url 'patient_prescriptions' %}" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-times mr-2"></i>Clear Filters
+                    </a>
+                {% else %}
+                    <p class="text-gray-500 mb-6">You don't have any prescriptions yet. Book an appointment to get started.</p>
+                    <a href="{% url 'appointments:book_appointment' %}" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-calendar-plus mr-2"></i>Book Appointment
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

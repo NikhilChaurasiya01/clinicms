@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block header %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-xl p-6 mb-8 text-white">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold mb-2">
+          <i class="fa-solid fa-chart-line mr-3"></i>
+          Analytics Dashboard
+        </h1>
+        <p class="text-indigo-100">Comprehensive analytics and insights</p>
+      </div>
+      <a href="{% url 'dashboard_admin' %}" 
+         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition duration-200">
+        <i class="fa-solid fa-arrow-left mr-2"></i>
+        Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metrics Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Total Users</p>
+          <p class="text-2xl font-bold text-gray-800">{{ total_users }}</p>
+          {% if user_growth_rate > 0 %}
+            <p class="text-xs text-green-600">+{{ user_growth_rate }}% this month</p>
+          {% elif user_growth_rate < 0 %}
+            <p class="text-xs text-red-600">{{ user_growth_rate }}% this month</p>
+          {% else %}
+            <p class="text-xs text-gray-600">No change</p>
+          {% endif %}
+        </div>
+        <div class="bg-blue-100 p-3 rounded-lg">
+          <i class="fa-solid fa-users text-blue-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Total Appointments</p>
+          <p class="text-2xl font-bold text-gray-800">{{ total_appointments }}</p>
+          <p class="text-xs text-green-600">{{ appointment_completion_rate }}% completion rate</p>
+        </div>
+        <div class="bg-green-100 p-3 rounded-lg">
+          <i class="fa-solid fa-calendar text-green-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Active Doctors</p>
+          <p class="text-2xl font-bold text-gray-800">{{ total_doctors }}</p>
+          <p class="text-xs text-gray-600">{{ new_doctors_this_month }} new this month</p>
+        </div>
+        <div class="bg-purple-100 p-3 rounded-lg">
+          <i class="fa-solid fa-user-doctor text-purple-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Prescriptions</p>
+          <p class="text-2xl font-bold text-gray-800">{{ total_prescriptions }}</p>
+          <p class="text-xs text-gray-600">{{ monthly_prescriptions }} this month</p>
+        </div>
+        <div class="bg-orange-100 p-3 rounded-lg">
+          <i class="fa-solid fa-pills text-orange-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- User Growth Chart -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-chart-line mr-2 text-blue-600"></i>
+        User Growth Trend
+      </h3>
+      <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+        <div class="text-center">
+          <i class="fa-solid fa-chart-line text-4xl text-gray-400 mb-2"></i>
+          <p class="text-gray-600">Chart will be rendered here</p>
+          <p class="text-sm text-gray-500">{{ new_users_this_month }} new users this month</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appointment Status Distribution -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-chart-pie mr-2 text-green-600"></i>
+        Appointment Status
+      </h3>
+      <div class="h-64">
+        <div class="flex flex-col space-y-4 justify-center h-full">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-green-500 rounded mr-3"></div>
+              <span class="text-gray-700">Completed</span>
+            </div>
+            <span class="font-semibold">{{ completed_appointments }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-yellow-500 rounded mr-3"></div>
+              <span class="text-gray-700">Pending</span>
+            </div>
+            <span class="font-semibold">{{ pending_appointments }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-red-500 rounded mr-3"></div>
+              <span class="text-gray-700">Cancelled</span>
+            </div>
+            <span class="font-semibold">{{ cancelled_appointments }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctor Performance Table -->
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+      <i class="fa-solid fa-ranking-star mr-2 text-purple-600"></i>
+      Doctor Performance
+    </h3>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Doctor</th>
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Total Appointments</th>
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Completed</th>
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Prescriptions</th>
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Success Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doctor in doctor_performance|slice:":10" %}
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="py-3 px-4">
+              <div class="flex items-center">
+                <div class="bg-purple-100 p-2 rounded-full mr-3">
+                  <i class="fa-solid fa-user-doctor text-purple-600"></i>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">
+                    Dr. {{ doctor.get_full_name|default:doctor.username }}
+                  </p>
+                  <p class="text-sm text-gray-600">{{ doctor.email|default:'-' }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-4 font-semibold">{{ doctor.total_appointments }}</td>
+            <td class="py-3 px-4 text-green-600">{{ doctor.completed_appointments }}</td>
+            <td class="py-3 px-4 text-blue-600">{{ doctor.total_prescriptions }}</td>
+            <td class="py-3 px-4">
+              {% if doctor.total_appointments > 0 %}
+                {% widthratio doctor.completed_appointments doctor.total_appointments 100 as success_rate %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                  {% if success_rate >= 80 %}bg-green-100 text-green-800
+                  {% elif success_rate >= 60 %}bg-yellow-100 text-yellow-800
+                  {% else %}bg-red-100 text-red-800{% endif %}">
+                  {{ success_rate }}%
+                </span>
+              {% else %}
+                <span class="text-gray-400">N/A</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="py-8 px-4 text-center text-gray-500">
+              No doctor data available
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent Users -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-user-plus mr-2 text-blue-600"></i>
+        Recent Users
+      </h3>
+      <div class="space-y-3">
+        {% for user in recent_users|slice:":5" %}
+        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+          <div class="bg-blue-100 p-2 rounded-full mr-3">
+            {% if user.role == 'doctor' %}
+              <i class="fa-solid fa-user-doctor text-blue-600"></i>
+            {% else %}
+              <i class="fa-solid fa-user text-green-600"></i>
+            {% endif %}
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-800">
+              {{ user.get_full_name|default:user.username }}
+            </p>
+            <p class="text-xs text-gray-600">{{ user.role|title }} - {{ user.date_joined|timesince }} ago</p>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 text-center py-4">No recent users</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recent Appointments -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-calendar mr-2 text-green-600"></i>
+        Recent Appointments
+      </h3>
+      <div class="space-y-3">
+        {% for appointment in recent_appointments|slice:":5" %}
+        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+          <div class="bg-green-100 p-2 rounded-full mr-3">
+            <i class="fa-solid fa-calendar text-green-600"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-800">
+              {{ appointment.patient.get_full_name|default:appointment.patient.username }} 
+              → Dr. {{ appointment.doctor.get_full_name|default:appointment.doctor.username }}
+            </p>
+            <p class="text-xs text-gray-600">
+              {{ appointment.appointment_datetime|date:"M d, Y" }} - 
+              <span class="
+                {% if appointment.status == 'completed' %}text-green-600
+                {% elif appointment.status == 'pending' %}text-yellow-600
+                {% else %}text-red-600{% endif %}
+              ">{{ appointment.status|title }}</span>
+            </p>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 text-center py-4">No recent appointments</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Medicines -->
+  {% if top_medicines %}
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mt-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+      <i class="fa-solid fa-pills mr-2 text-orange-600"></i>
+      Most Prescribed Medicines
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      {% for medicine in top_medicines|slice:":10" %}
+      <div class="bg-orange-50 p-4 rounded-lg text-center">
+        <p class="font-medium text-gray-800">{{ medicine.medicine }}</p>
+        <p class="text-2xl font-bold text-orange-600">{{ medicine.count }}</p>
+        <p class="text-xs text-orange-600">prescriptions</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+// Chart data is available in template context if needed
+// const weeklyData = {{ weekly_chart_data|safe }};
+// const monthlyData = {{ monthly_chart_data|safe }};
+// const appointmentData = {{ appointment_chart_data|safe }};
+</script>
+{% endblock %}

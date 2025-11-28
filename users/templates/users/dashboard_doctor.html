@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block header %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+  <!-- Welcome Header -->
+  <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-8 text-white">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold mb-2">Welcome, Dr. {{ user.username }}</h1>
+        <p class="text-blue-100">Manage your patients and appointments efficiently</p>
+      </div>
+      <div class="hidden md:block">
+        <i class="fa-solid fa-stethoscope text-6xl text-blue-200"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Today's Appointments</p>
+          <p class="text-2xl font-bold text-gray-800">{{ todays_appointments_count }}</p>
+        </div>
+        <div class="bg-blue-100 p-3 rounded-lg">
+          <i class="fa-solid fa-calendar-day text-blue-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Total Patients</p>
+          <p class="text-2xl font-bold text-gray-800">{{ total_patients }}</p>
+        </div>
+        <div class="bg-green-100 p-3 rounded-lg">
+          <i class="fa-solid fa-users text-green-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Prescriptions Issued</p>
+          <p class="text-2xl font-bold text-gray-800">{{ prescriptions_count }}</p>
+        </div>
+        <div class="bg-purple-100 p-3 rounded-lg">
+          <i class="fa-solid fa-prescription-bottle text-purple-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Pending</p>
+          <p class="text-2xl font-bold text-gray-800">{{ pending_appointments }}</p>
+        </div>
+        <div class="bg-orange-100 p-3 rounded-lg">
+          <i class="fa-solid fa-clock text-orange-600 text-xl"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Upcoming Appointments -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-gray-800">
+            <i class="fa-solid fa-calendar-check mr-2 text-blue-600"></i>
+            Upcoming Appointments
+          </h2>
+          <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+            {{ appointments.count }} Scheduled
+          </span>
+        </div>
+      </div>
+      
+      <div class="max-h-96 overflow-y-auto">
+        {% for appt in appointments %}
+        <div class="p-6 border-b border-gray-100 hover:bg-gray-50 transition duration-200">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center">
+              <div class="bg-blue-100 p-2 rounded-full mr-3">
+                <i class="fa-solid fa-user text-blue-600"></i>
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">{{ appt.patient.username }}</h3>
+                <p class="text-sm text-gray-600">
+                  <i class="fa-solid fa-clock mr-1"></i>
+                  {{ appt.appointment_datetime|date:"M d, Y" }} at {{ appt.appointment_datetime|date:"g:i A" }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              {% if appt.status == 'pending' %}
+                <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">
+                  Pending
+                </span>
+                <!-- Button to mark as completed -->
+                <form method="post" action="{% url 'mark_completed' appt.id %}" class="inline">
+                  {% csrf_token %}
+                  <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition duration-200">
+                    Mark as Completed
+                  </button>
+                </form>
+              {% elif appt.status == 'completed' %}
+                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">
+                  Completed
+                </span>
+              {% elif appt.status == 'cancelled' %}
+                <span class="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">
+                  Cancelled
+                </span>
+              {% endif %}
+            </div>
+          </div>
+          
+          <!-- Show symptoms if available -->
+          {% if appt.symptoms %}
+          <div class="mb-3">
+            <p class="text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+              <i class="fa-solid fa-info-circle mr-1"></i>
+              <strong>Symptoms:</strong> {{ appt.symptoms }}
+            </p>
+          </div>
+          {% endif %}
+
+          <!-- Show appointment type if available -->
+          {% if appt.appointment_type %}
+          <div class="mb-3">
+            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
+              {{ appt.appointment_type|capfirst }}
+            </span>
+          </div>
+          {% endif %}
+          
+          <!-- Action buttons -->
+          <div class="flex flex-wrap gap-2">
+            <!-- View appointment details -->
+            <a
+              href="{% url 'appointments:appointment_detail' appt.id %}"
+              class="inline-flex items-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm transition duration-200"
+            >
+              <i class="fa-solid fa-eye mr-1"></i>
+              View Details
+            </a>
+            
+            <!-- Add notes button (if needed) -->
+            {% if appt.status == 'pending' %}
+            <button 
+              onclick="showNotesModal({{ appt.id }})" 
+              class="inline-flex items-center bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-sm transition duration-200"
+            >
+              <i class="fa-solid fa-notes-medical mr-1"></i>
+              Add Notes
+            </button>
+            {% endif %}
+
+            <!-- Show existing notes if any -->
+            {% if appt.notes %}
+            <button 
+              onclick="showNotesModal({{ appt.id }}, '{{ appt.notes|escapejs }}')" 
+              class="inline-flex items-center bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-3 py-1 rounded-lg text-sm transition duration-200"
+            >
+              <i class="fa-solid fa-note-sticky mr-1"></i>
+              View Notes
+            </button>
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <div class="p-8 text-center">
+          <i class="fa-solid fa-calendar-xmark text-4xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">No upcoming appointments</p>
+          <p class="text-sm text-gray-400 mt-1">Your schedule is clear for now</p>
+        </div>
+        {% endfor %}
+      </div>
+      
+      {% if appointments %}
+      <div class="p-4 border-t border-gray-200 bg-gray-50">
+        <a href="{% url 'appointments:list_appointments' %}" class="w-full text-blue-600 hover:text-blue-700 text-sm font-medium transition duration-200 block text-center">
+          View All Appointments
+          <i class="fa-solid fa-arrow-right ml-1"></i>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Recent Prescriptions -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-gray-800">
+            <i class="fa-solid fa-prescription text-purple-600 mr-2"></i>
+            Recent Prescriptions
+          </h2>
+          <button class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-sm transition duration-200">
+            <i class="fa-solid fa-plus mr-1"></i>
+            New Prescription
+          </button>
+        </div>
+      </div>
+      
+      <div class="max-h-96 overflow-y-auto">
+        {% for pres in prescriptions %}
+        <div class="p-6 border-b border-gray-100 hover:bg-gray-50 transition duration-200">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex-1">
+              <div class="flex items-center mb-2">
+                <div class="bg-purple-100 p-1 rounded mr-2">
+                  <i class="fa-solid fa-pills text-purple-600 text-sm"></i>
+                </div>
+                <h3 class="font-semibold text-gray-800">{{ pres.medicine_name|default:"Prescription" }}</h3>
+                {% if pres.dosage %}
+                <span class="ml-2 bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+                  {{ pres.dosage }}
+                </span>
+                {% endif %}
+              </div>
+              
+              {% if pres.instructions %}
+              <p class="text-sm text-gray-600 mb-2 bg-gray-50 p-2 rounded">
+                <i class="fa-solid fa-info-circle mr-1"></i>
+                {{ pres.instructions }}
+              </p>
+              {% endif %}
+              
+              <div class="flex items-center text-xs text-gray-400 space-x-4">
+                <span>
+                  <i class="fa-solid fa-calendar mr-1"></i>
+                  {{ pres.date_issued|date:"M d, Y" }}
+                </span>
+                <span>
+                  <i class="fa-solid fa-clock mr-1"></i>
+                  {{ pres.date_issued|date:"g:i A" }}
+                </span>
+                {% if pres.patient %}
+                <span>
+                  <i class="fa-solid fa-user mr-1"></i>
+                  {{ pres.patient.username }}
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-2">
+             <!-- Edit Button -->
+            <a href="{% url 'prescriptions:edit_prescription' pk=pres.id %}" 
+              class="inline-flex items-center bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs transition duration-200">
+              <i class="fa-solid fa-edit mr-1"></i>
+              Edit
+            </a>
+
+            <!-- Print Button -->
+            <a href="{% url 'prescriptions:print_prescription' pk=pres.id %}" 
+              class="inline-flex items-center bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs transition duration-200" target="_blank">
+              <i class="fa-solid fa-print mr-1"></i>
+              Print
+            </a>
+            <button class="inline-flex items-center bg-red-100 hover:bg-red-200 text-red-600 px-2 py-1 rounded text-xs transition duration-200">
+              <i class="fa-solid fa-trash mr-1"></i>
+              Delete
+            </button>
+          </div>
+        </div>
+        {% empty %}
+        <div class="p-8 text-center">
+          <i class="fa-solid fa-prescription-bottle text-4xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">No prescriptions issued yet</p>
+          <p class="text-sm text-gray-400 mt-1">Start by creating your first prescription</p>
+        </div>
+        {% endfor %}
+      </div>
+      
+      {% if prescriptions %}
+      <div class="p-4 border-t border-gray-200 bg-gray-50">
+        <button class="w-full text-purple-600 hover:text-purple-700 text-sm font-medium transition duration-200">
+          View All Prescriptions
+          <i class="fa-solid fa-arrow-right ml-1"></i>
+        </button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Schedule Management -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center hover:shadow-md transition duration-200">
+      <div class="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-calendar-check text-green-600 text-2xl"></i>
+      </div>
+      <h3 class="font-semibold text-gray-800 mb-2">My Schedule</h3>
+      <p class="text-sm text-gray-600 mb-4">View your weekly appointment schedule</p>
+      <a href="{% url 'doctor_schedule' %}" class="block w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition duration-200 no-underline">
+        View Schedule
+      </a>
+    </div>
+
+    <!-- Analytics & Reports -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center hover:shadow-md transition duration-200">
+      <div class="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-chart-line text-blue-600 text-2xl"></i>
+      </div>
+      <h3 class="font-semibold text-gray-800 mb-2">Analytics & Reports</h3>
+      <p class="text-sm text-gray-600 mb-4">View analytics, statistics and patient reports</p>
+      <a href="{% url 'doctor_analytics' %}" class="block w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-200 no-underline">
+        View Analytics
+      </a>
+    </div>
+
+    <!-- Manage Patients -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center hover:shadow-md transition duration-200">
+      <div class="bg-purple-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-users text-purple-600 text-2xl"></i>
+      </div>
+      <h3 class="font-semibold text-gray-800 mb-2">Manage Patients</h3>
+      <p class="text-sm text-gray-600 mb-4">View and manage your patient records</p>
+      <a href="{% url 'doctor_patients_list' %}" class="block w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg transition duration-200 no-underline">
+        View Patients
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Notes Modal -->
+<div id="notesModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="mt-3 text-center">
+      <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+        <i class="fa-solid fa-notes-medical text-blue-600 text-xl"></i>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mt-5" id="modalTitle">Add Notes</h3>
+      <div class="mt-2 px-7 py-3">
+        <form id="notesForm" method="post">
+          {% csrf_token %}
+          <textarea 
+            id="notesTextarea" 
+            name="notes" 
+            rows="4" 
+            class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-blue-500" 
+            placeholder="Enter your notes here..."
+          ></textarea>
+        </form>
+      </div>
+      <div class="items-center px-4 py-3">
+        <button
+          id="saveNotesBtn"
+          class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        >
+          Save Notes
+        </button>
+        <button
+          id="closeModalBtn"
+          class="mt-3 px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Notes Modal functionality
+function showNotesModal(appointmentId, existingNotes = '') {
+  const modal = document.getElementById('notesModal');
+  const textarea = document.getElementById('notesTextarea');
+  const form = document.getElementById('notesForm');
+  const title = document.getElementById('modalTitle');
+  
+  textarea.value = existingNotes;
+  title.textContent = existingNotes ? 'View/Edit Notes' : 'Add Notes';
+  
+  // Set form action
+  form.action = `/appointments/add-notes/${appointmentId}/`;
+  
+  modal.classList.remove('hidden');
+}
+
+// Close modal
+document.getElementById('closeModalBtn').addEventListener('click', function() {
+  document.getElementById('notesModal').classList.add('hidden');
+});
+
+// Save notes
+document.getElementById('saveNotesBtn').addEventListener('click', function() {
+  document.getElementById('notesForm').submit();
+});
+
+// Close modal when clicking outside
+document.getElementById('notesModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.classList.add('hidden');
+  }
+});
+</script>
+
+{% endblock %}

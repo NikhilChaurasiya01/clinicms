@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block header %}System Health{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-red-600 to-red-700 rounded-xl p-6 mb-8 text-white">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold mb-2">
+          <i class="fa-solid fa-heartbeat mr-3"></i>
+          System Health Monitor
+        </h1>
+        <p class="text-red-100">Monitor system performance and health status</p>
+      </div>
+      <a href="{% url 'dashboard_admin' %}" 
+         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition duration-200">
+        <i class="fa-solid fa-arrow-left mr-2"></i>
+        Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- System Alerts -->
+  {% if alerts %}
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+      <i class="fa-solid fa-exclamation-triangle mr-2 text-orange-500"></i>
+      System Alerts
+    </h2>
+    <div class="space-y-4">
+      {% for alert in alerts %}
+      <div class="bg-{{ alert.type }}-50 border border-{{ alert.type }}-200 rounded-lg p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            {% if alert.type == 'warning' %}
+              <i class="fa-solid fa-exclamation-triangle text-orange-500"></i>
+            {% elif alert.type == 'error' %}
+              <i class="fa-solid fa-times-circle text-red-500"></i>
+            {% else %}
+              <i class="fa-solid fa-info-circle text-blue-500"></i>
+            {% endif %}
+          </div>
+          <div class="ml-3">
+            <p class="text-{{ alert.type }}-800">{{ alert.message }}</p>
+            {% if alert.action_url %}
+              <a href="{{ alert.action_url }}" 
+                 class="mt-2 inline-block bg-{{ alert.type }}-600 hover:bg-{{ alert.type }}-700 text-white px-4 py-2 rounded text-sm">
+                Take Action
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Database Statistics -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-database mr-2 text-blue-600"></i>
+        Database Statistics
+      </h3>
+      <div class="space-y-3">
+        <div class="flex justify-between">
+          <span class="text-gray-600">Total Records:</span>
+          <span class="font-semibold">{{ health_metrics.database_stats.total_records }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-600">Users:</span>
+          <span class="font-semibold">{{ health_metrics.database_stats.users_table }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-600">Appointments:</span>
+          <span class="font-semibold">{{ health_metrics.database_stats.appointments_table }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-600">Prescriptions:</span>
+          <span class="font-semibold">{{ health_metrics.database_stats.prescriptions_table }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-activity mr-2 text-green-600"></i>
+        Today's Activity
+      </h3>
+      <div class="space-y-3">
+        <div class="flex justify-between">
+          <span class="text-gray-600">New Registrations:</span>
+          <span class="font-semibold">{{ health_metrics.recent_activity.registrations_today }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-600">Appointments:</span>
+          <span class="font-semibold">{{ health_metrics.recent_activity.appointments_today }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-600">Prescriptions:</span>
+          <span class="font-semibold">{{ health_metrics.recent_activity.prescriptions_today }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Usage Statistics -->
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
+    <h3 class="text-lg font-semibold text-gray-800 mb-6">
+      <i class="fa-solid fa-chart-bar mr-2 text-purple-600"></i>
+      System Usage Statistics
+    </h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h4 class="font-medium text-gray-700 mb-3">Peak Usage</h4>
+        {% if health_metrics.system_usage.peak_appointment_day %}
+        <div class="bg-purple-50 p-4 rounded-lg">
+          <p class="text-purple-800">
+            <strong>Busiest Day:</strong> 
+            {{ health_metrics.system_usage.peak_appointment_day.day|date:"M d, Y" }}
+          </p>
+          <p class="text-purple-600 text-sm">
+            {{ health_metrics.system_usage.peak_appointment_day.count }} appointments
+          </p>
+        </div>
+        {% else %}
+        <p class="text-gray-500">No data available</p>
+        {% endif %}
+      </div>
+      
+      <div>
+        <h4 class="font-medium text-gray-700 mb-3">Top Performer</h4>
+        {% if health_metrics.system_usage.busiest_doctor %}
+        <div class="bg-green-50 p-4 rounded-lg">
+          <p class="text-green-800">
+            <strong>Most Active Doctor:</strong> 
+            Dr. {{ health_metrics.system_usage.busiest_doctor.get_full_name|default:health_metrics.system_usage.busiest_doctor.username }}
+          </p>
+          <p class="text-green-600 text-sm">
+            {{ health_metrics.system_usage.busiest_doctor.appointment_count }} total appointments
+          </p>
+        </div>
+        {% else %}
+        <p class="text-gray-500">No data available</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Issues -->
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+      <i class="fa-solid fa-exclamation-circle mr-2 text-orange-600"></i>
+      Performance Issues
+    </h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-yellow-50 p-4 rounded-lg">
+        <h4 class="font-medium text-yellow-800 mb-2">Overdue Appointments</h4>
+        <div class="flex items-center justify-between">
+          <span class="text-2xl font-bold text-yellow-600">{{ overdue_appointments }}</span>
+          <i class="fa-solid fa-clock text-yellow-500 text-xl"></i>
+        </div>
+        <p class="text-yellow-600 text-sm mt-1">Appointments past due date</p>
+      </div>
+      
+      <div class="bg-orange-50 p-4 rounded-lg">
+        <h4 class="font-medium text-orange-800 mb-2">Inactive Doctors</h4>
+        <div class="flex items-center justify-between">
+          <span class="text-2xl font-bold text-orange-600">{{ inactive_doctors }}</span>
+          <i class="fa-solid fa-user-slash text-orange-500 text-xl"></i>
+        </div>
+        <p class="text-orange-600 text-sm mt-1">No appointments in 30 days</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Errors Section -->
+  {% if recent_errors %}
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mt-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+      <i class="fa-solid fa-bug mr-2 text-red-600"></i>
+      Recent Errors
+    </h3>
+    <div class="space-y-3">
+      {% for error in recent_errors %}
+      <div class="bg-red-50 border border-red-200 rounded p-3">
+        <p class="text-red-800 font-medium">{{ error.message }}</p>
+        <p class="text-red-600 text-sm">{{ error.timestamp|date:"M d, Y g:i A" }}</p>
+      </div>
+      {% empty %}
+      <div class="text-center py-8">
+        <i class="fa-solid fa-check-circle text-green-500 text-4xl mb-2"></i>
+        <p class="text-green-600">No recent errors detected</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mt-6">
+    <div class="text-center py-8">
+      <i class="fa-solid fa-check-circle text-green-500 text-4xl mb-2"></i>
+      <p class="text-green-600 text-lg font-medium">System Running Smoothly</p>
+      <p class="text-gray-500">No critical issues detected</p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

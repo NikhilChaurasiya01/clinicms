@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}All Prescriptions{% endblock %}
+
+{% block header %}All Prescriptions{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Filter and Search Bar -->
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold text-gray-800">Prescription Management</h2>
+      <div class="text-sm text-gray-600">Total: {{ total_prescriptions }}</div>
+    </div>
+    
+    <form method="GET" class="flex space-x-4">
+      <input type="text" name="q" value="{{ search_query }}" 
+             placeholder="Search by patient name or medication..." 
+             class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
+      <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg">
+        <option value="">All Status</option>
+        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+        <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
+      </select>
+      <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        Filter
+      </button>
+    </form>
+  </div>
+
+  <!-- Prescriptions List -->
+  <div class="bg-white rounded-lg shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Medication</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Issued</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for prescription in prescriptions %}
+                <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {% if prescription.patient %}
+                    <div class="font-medium text-gray-900">
+                        {{ prescription.patient.get_full_name|default:prescription.patient.username }}
+                    </div>
+                    {% else %}
+                    <div class="font-medium text-gray-500 italic">No patient linked</div>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm text-gray-900">{{ prescription.medication }}</div>
+                    <div class="text-xs text-gray-500">{{ prescription.dosage }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ prescription.date_issued|date:"M j, Y" }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs rounded-full {% if prescription.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {% if prescription.is_active %}Active{% else %}Expired{% endif %}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <a href="{% url 'prescriptions:edit_prescription' prescription.pk %}" class="text-green-600 hover:text-green-900 mr-3">Edit</a>
+                    <a href="#" class="text-blue-600 hover:text-blue-900">View</a>
+                </td>
+                </tr>
+            {% empty %}
+                <tr>
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500">No prescriptions found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+"""

@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block title %}{{ role|title }} Portal | ClinicMS{% endblock %}
+
+{% block header %}{{ role|title }} Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Portal Welcome -->
+<div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-xl p-8 mb-8 shadow-sm">
+  <div class="text-center">
+    <!-- Role-specific Icon and Colors -->
+    {% if role == "admin" %}
+    <div class="bg-blue-500 p-6 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
+      <i class="fa-solid fa-user-shield text-white text-3xl"></i>
+    </div>
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to Admin Portal</h1>
+    <p class="text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed">
+      Comprehensive clinic management at your fingertips. Monitor operations, manage staff, and oversee all aspects of your healthcare facility.
+    </p>
+    {% elif role == "doctor" %}
+    <div class="bg-green-500 p-6 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
+      <i class="fa-solid fa-stethoscope text-white text-3xl"></i>
+    </div>
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to Doctor Portal</h1>
+    <p class="text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed">
+      Your dedicated workspace for patient care. Manage appointments, create prescriptions, and access patient records efficiently.
+    </p>
+    {% elif role == "patient" %}
+    <div class="bg-purple-500 p-6 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
+      <i class="fa-solid fa-heart text-white text-3xl"></i>
+    </div>
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to Patient Portal</h1>
+    <p class="text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed">
+      Take control of your healthcare journey. Book appointments, view prescriptions, and access your medical history in one secure place.
+    </p>
+    {% else %}
+    <div class="bg-gray-500 p-6 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg">
+      <i class="fa-solid fa-hospital text-white text-3xl"></i>
+    </div>
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Healthcare Portal</h1>
+    <p class="text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed">
+      Access your personalized healthcare dashboard. Sign in to continue with your medical care management.
+    </p>
+    {% endif %}
+
+    <!-- Quick Access Button -->
+    <div class="mt-6">
+      {% if not user.is_authenticated %}
+        {% if role == "admin" %}
+        <a href="{% url 'login' %}?role={{ role }}" class="inline-flex items-center justify-center space-x-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 text-lg shadow-lg font-semibold">
+          <i class="fa-solid fa-sign-in-alt"></i>
+          <span>Access Admin Portal</span>
+        </a>
+        {% elif role == "doctor" %}
+        <a href="{% url 'login' %}?role={{ role }}" class="inline-flex items-center justify-center space-x-2 px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 text-lg shadow-lg font-semibold">
+          <i class="fa-solid fa-stethoscope"></i>
+          <span>Doctor Login</span>
+        </a>
+        {% elif role == "patient" %}
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="{% url 'login' %}?role={{ role }}" class="inline-flex items-center justify-center space-x-2 px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 text-lg shadow-lg font-semibold">
+            <i class="fa-solid fa-sign-in-alt"></i>
+            <span>Login</span>
+          </a>
+          <a href="{% url 'register_patient' %}" class="inline-flex items-center justify-center space-x-2 px-8 py-3 bg-white text-purple-600 border-2 border-purple-600 rounded-lg hover:bg-purple-50 transition duration-200 text-lg shadow-lg font-semibold">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Register</span>
+          </a>
+        </div>
+        {% endif %}
+      {% else %}
+        <!-- Authenticated user - show dashboard link -->
+        {% if role == "admin" %}
+        <a href="{% url 'dashboard_admin' %}" class="inline-flex items-center justify-center space-x-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 text-lg shadow-lg font-semibold">
+          <i class="fa-solid fa-tachometer-alt"></i>
+          <span>Go to Dashboard</span>
+        </a>
+        {% elif role == "doctor" %}
+        <a href="{% url 'dashboard_doctor' %}" class="inline-flex items-center justify-center space-x-2 px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 text-lg shadow-lg font-semibold">
+          <i class="fa-solid fa-stethoscope"></i>
+          <span>Go to Dashboard</span>
+        </a>
+        {% elif role == "patient" %}
+        <a href="{% url 'dashboard_patient' %}" class="inline-flex items-center justify-center space-x-2 px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 text-lg shadow-lg font-semibold">
+          <i class="fa-solid fa-user"></i>
+          <span>Go to Dashboard</span>
+        </a>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Quick Access Cards Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+  {% if user.is_authenticated %}
+    <!-- Show role-specific quick access cards for authenticated users -->
+    {% if user.role == "admin" %}
+      <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="bg-blue-100 p-3 rounded-lg mr-4">
+            <i class="fa-solid fa-users text-blue-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">User Management</h3>
+        </div>
+        <p class="text-gray-600 mb-4">Manage doctors, patients, and staff accounts</p>
+        <div class="space-y-2">
+          <a href="#" class="block text-blue-600 hover:text-blue-700 text-sm font-medium transition duration-200">
+            <i class="fa-solid fa-user-md mr-2"></i>Manage Doctors
+          </a>
+          <a href="#" class="block text-blue-600 hover:text-blue-700 text-sm font-medium transition duration-200">
+            <i class="fa-solid fa-user-injured mr-2"></i>Manage Patients
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="bg-green-100 p-3 rounded-lg mr-4">
+            <i class="fa-solid fa-chart-bar text-green-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">Analytics</h3>
+        </div>
+        <p class="text-gray-600 mb-4">Monitor clinic performance and reports</p>
+        <a href="#" class="inline-flex items-center text-green-600 hover:text-green-700 text-sm font-medium transition duration-200">
+          View Analytics <i class="fa-solid fa-arrow-right ml-1"></i>
+        </a>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="bg-purple-100 p-3 rounded-lg mr-4">
+            <i class="fa-solid fa-cog text-purple-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">System Settings</h3>
+        </div>
+        <p class="text-gray-600 mb-4">Configure clinic settings and preferences</p>
+        <a href="/admin/" class="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm font-medium transition duration-200">
+          Admin Panel <i class="fa-solid fa-arrow-right ml-1"></i>
+        </a>
+      </div>
+
+    {% elif user.role == "doctor" %}
+      <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="bg-blue-100 p-3 rounded-lg mr-4">
+            <i class="fa-solid fa-calendar-check text-blue-600 text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800">Appointments</h3>
+            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">5 Today</span>
+          </div>
+        </div>
+        <p class="text-gray-600 mb-4">Manage your appointment schedule</p>
+        <a href="#" class="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition duration-200">
+          View Appointments <i class="fa-solid fa-arrow-right ml-1"></i>
+        </a>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="bg-purple-100 p-3 rounded-lg mr-4">
+            <i class="fa-solid fa-prescription text-purple-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">Prescriptions</h3>
+        </div>
+        <p class="text-gray-600 mb-4">Create and manage prescriptions</p>
+        <a href="#" class="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm font-medium transition duration-200">
+          Manage Prescriptions <i class="fa-solid fa-arrow-right ml-1"></i>
+        </a>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="bg-green-100 p-3 rounded-lg mr-4">
+            <i class="fa-solid fa-file-medical text-green-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">Patient Records</h3>
+        </div>
+        <p class="text-gray-600 mb-4">Access patient medical histories</p>
+        <div class="space-y-2">
+          <a href="#" class="block text-green-600 hover:text-green-700 text-sm font-medium transition duration-200">
+            <i class="fa-solid fa-history mr-2"></i>Medical History
+          </a>
+          <a href="#" class="block text-green-600 hover:text-green-700 text-sm font-medium transition duration-200">
+            <i class="fa-solid fa-notes-medical mr-2"></i>Treatment Records
+          </a>
+        </div>
+      </div>
+
+    {% elif user.role == "patient" %}
+      <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="bg-blue-100 p-3 rounded-lg mr-4">
+            <i class="fa-solid fa-calendar-plus text-blue-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">Book Appointment</h3>
+        </div>
+        <p class="text-gray-600 mb-4">Schedule your next medical appointment</p>
+        <a href="{% url 'appointments:book_appointment' %}" class="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition duration-200">
+          Book Now <i class="fa-solid fa-arrow-right ml-1"></i>
+        </a>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="bg-purple-100 p-3 rounded-lg mr-4">
+            <i class="fa-solid fa-pills text-purple-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">My Prescriptions</h3>
+        </div>
+        <p class="text-gray-600 mb-4">View and download your prescriptions</p>
+        <a href="#" class="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm font-medium transition duration-200">
+          View Prescriptions <i class="fa-solid fa-arrow-right ml-1"></i>
+        </a>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition duration-300">
+        <div class="flex items-center mb-4">
+          <div class="bg-green-100 p-3 rounded-lg mr-4">
+            <i class="fa-solid fa-history text-green-600 text-xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800">Medical History</h3>
+        </div>
+        <p class="text-gray-600 mb-4">Access your complete medical records</p>
+        <a href="#" class="inline-flex items-center text-green-600 hover:text-green-700 text-sm font-medium transition duration-200">
+          View History <i class="fa-solid fa-arrow-right ml-1"></i>
+        </a>
+      </div>
+    {% endif %}
+
+  {% else %}
+    <!-- Show general feature cards for non-authenticated users -->
+    {% if role == "admin" %}
+    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition duration-300">
+      <div class="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-users text-blue-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">User Management</h3>
+      <p class="text-gray-600 text-sm">Manage doctors, patients, and staff accounts with comprehensive admin controls.</p>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition duration-300">
+      <div class="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-chart-bar text-green-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Analytics & Reports</h3>
+      <p class="text-gray-600 text-sm">Monitor clinic performance with detailed analytics and comprehensive reporting tools.</p>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition duration-300">
+      <div class="bg-purple-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-cog text-purple-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">System Configuration</h3>
+      <p class="text-gray-600 text-sm">Configure clinic settings, backup data, and manage system preferences.</p>
+    </div>
+    
+    {% elif role == "doctor" %}
+    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition duration-300">
+      <div class="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-calendar-check text-blue-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Appointment Management</h3>
+      <p class="text-gray-600 text-sm">View, schedule, and manage patient appointments with integrated calendar system.</p>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition duration-300">
+      <div class="bg-purple-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-prescription text-purple-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Prescription Management</h3>
+      <p class="text-gray-600 text-sm">Create, edit, and manage patient prescriptions with dosage tracking.</p>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition duration-300">
+      <div class="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-file-medical text-green-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Patient Records</h3>
+      <p class="text-gray-600 text-sm">Access comprehensive patient medical histories and treatment records.</p>
+    </div>
+    
+    {% elif role == "patient" %}
+    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition duration-300">
+      <div class="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-calendar-plus text-blue-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Easy Booking</h3>
+      <p class="text-gray-600 text-sm">Schedule appointments with available doctors at your convenience.</p>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition duration-300">
+      <div class="bg-purple-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-pills text-purple-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Prescription Access</h3>
+      <p class="text-gray-600 text-sm">View and download your prescriptions anytime, anywhere.</p>
+    </div>
+    
+    <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 text-center hover:shadow-xl transition duration-300">
+      <div class="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i class="fa-solid fa-history text-green-600 text-2xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Medical History</h3>
+      <p class="text-gray-600 text-sm">Access your complete medical records and appointment history.</p>
+    </div>
+    {% endif %}
+  {% endif %}
+</div>
+
+<!-- Other Portals Section (only show if not authenticated) -->
+{% if not user.is_authenticated %}
+<div class="bg-white rounded-xl p-8 shadow-lg border border-gray-200 mb-8">
+  <h3 class="text-2xl font-bold text-center text-gray-800 mb-6">Other Portals</h3>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {% if role != "admin" %}
+    <div class="text-center p-4 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition duration-300">
+      <div class="bg-blue-100 p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+        <i class="fa-solid fa-user-shield text-blue-600 text-lg"></i>
+      </div>
+      <h4 class="font-semibold text-gray-800 mb-2">Admin Portal</h4>
+      <p class="text-xs text-gray-600 mb-3">For administrative access</p>
+      <a href="{% url 'portal' role='admin' %}" class="inline-flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium transition duration-200">
+        Access Portal <i class="fa-solid fa-arrow-right ml-1"></i>
+      </a>
+    </div>
+    {% endif %}
+    
+    {% if role != "doctor" %}
+    <div class="text-center p-4 rounded-lg border border-gray-100 hover:border-green-200 hover:bg-green-50 transition duration-300">
+      <div class="bg-green-100 p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+        <i class="fa-solid fa-stethoscope text-green-600 text-lg"></i>
+      </div>
+      <h4 class="font-semibold text-gray-800 mb-2">Doctor Portal</h4>
+      <p class="text-xs text-gray-600 mb-3">For medical professionals</p>
+      <a href="{% url 'portal' role='doctor' %}" class="inline-flex items-center text-green-600 hover:text-green-700 text-sm font-medium transition duration-200">
+        Access Portal <i class="fa-solid fa-arrow-right ml-1"></i>
+      </a>
+    </div>
+    {% endif %}
+    
+    {% if role != "patient" %}
+    <div class="text-center p-4 rounded-lg border border-gray-100 hover:border-purple-200 hover:bg-purple-50 transition duration-300">
+      <div class="bg-purple-100 p-3 rounded-full w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+        <i class="fa-solid fa-heart text-purple-600 text-lg"></i>
+      </div>
+      <h4 class="font-semibold text-gray-800 mb-2">Patient Portal</h4>
+      <p class="text-xs text-gray-600 mb-3">For patients and families</p>
+      <a href="{% url 'portal' role='patient' %}" class="inline-flex items-center text-purple-600 hover:text-purple-700 text-sm font-medium transition duration-200">
+        Access Portal <i class="fa-solid fa-arrow-right ml-1"></i>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Security Notice -->
+<div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 shadow-sm border border-green-200">
+  <div class="flex items-center justify-center mb-4">
+    <div class="bg-green-100 p-3 rounded-full mr-4">
+      <i class="fa-solid fa-shield-alt text-green-600 text-xl"></i>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-800">Secure & Confidential</h3>
+  </div>
+  <p class="text-center text-gray-700">
+    Your medical information is protected with industry-standard encryption and security measures. 
+    We comply with all healthcare privacy regulations to keep your data safe.
+  </p>
+</div>
+
+<!-- Additional Info Section for Authenticated Users -->
+{% if user.is_authenticated %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+  <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+    <div class="flex items-center mb-4">
+      <div class="bg-blue-100 p-3 rounded-lg mr-4">
+        <i class="fa-solid fa-info-circle text-blue-600 text-xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800">Quick Tips</h3>
+    </div>
+    {% if user.role == "admin" %}
+    <ul class="text-sm text-gray-600 space-y-2">
+      <li class="flex items-start">
+        <i class="fa-solid fa-check text-green-500 mr-2 mt-1"></i>
+        Use the sidebar navigation to access all admin features
+      </li>
+      <li class="flex items-start">
+        <i class="fa-solid fa-check text-green-500 mr-2 mt-1"></i>
+        Monitor system performance through the Analytics section
+      </li>
+      <li class="flex items-start">
+        <i class="fa-solid fa-check text-green-500 mr-2 mt-1"></i>
+        Check notifications regularly for important updates
+      </li>
+    </ul>
+    {% elif user.role == "doctor" %}
+    <ul class="text-sm text-gray-600 space-y-2">
+      <li class="flex items-start">
+        <i class="fa-solid fa-check text-green-500 mr-2 mt-1"></i>
+        Check your appointments daily using the sidebar menu
+      </li>
+      <li class="flex items-start">
+        <i class="fa-solid fa-check text-green-500 mr-2 mt-1"></i>
+        Access patient records before appointments
+      </li>
+      <li class="flex items-start">
+        <i class="fa-solid fa-check text-green-500 mr-2 mt-1"></i>
+        Use the prescription management for efficient workflow
+      </li>
+    </ul>
+    {% elif user.role == "patient" %}
+    <ul class="text-sm text-gray-600 space-y-2">
+      <li class="flex items-start">
+        <i class="fa-solid fa-check text-green-500 mr-2 mt-1"></i>
+        Book appointments easily through the sidebar
+      </li>
+      <li class="flex items-start">
+        <i class="fa-solid fa-check text-green-500 mr-2 mt-1"></i>
+        Keep track of your prescriptions and medical history
+      </li>
+      <li class="flex items-start">
+        <i class="fa-solid fa-check text-green-500 mr-2 mt-1"></i>
+        Update your profile settings when needed
+      </li>
+    </ul>
+    {% endif %}
+  </div>
+
+  <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+    <div class="flex items-center mb-4">
+      <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+        <i class="fa-solid fa-bell text-yellow-600 text-xl"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800">Recent Updates</h3>
+    </div>
+    <div class="text-sm text-gray-600 space-y-3">
+      <div class="flex items-start">
+        <div class="w-2 h-2 bg-blue-500 rounded-full mr-3 mt-2"></div>
+        <div>
+          <div class="font-medium">System Maintenance</div>
+          <div class="text-xs text-gray-500">Scheduled for this weekend</div>
+        </div>
+      </div>
+      <div class="flex items-start">
+        <div class="w-2 h-2 bg-green-500 rounded-full mr-3 mt-2"></div>
+        <div>
+          <div class="font-medium">New Features Available</div>
+          <div class="text-xs text-gray-500">Enhanced appointment booking system</div>
+        </div>
+      </div>
+      <div class="flex items-start">
+        <div class="w-2 h-2 bg-purple-500 rounded-full mr-3 mt-2"></div>
+        <div>
+          <div class="font-medium">Security Update</div>
+          <div class="text-xs text-gray-500">Two-factor authentication now available</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

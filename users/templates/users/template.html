@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Prescription Templates - Clinic Management System{% endblock %}
+
+{% block header %}Prescription Templates{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Page Header with Stats -->
+  <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-6 text-white">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-bold mb-2">Prescription Templates</h2>
+        <p class="text-blue-100">Quick prescribing with your commonly used medications</p>
+      </div>
+      <div class="text-right">
+        <button class="px-6 py-3 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-semibold">
+          <i class="fa-solid fa-plus mr-2"></i>Create New Template
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+      <div class="flex flex-col sm:flex-row gap-4 flex-1">
+        <div class="relative max-w-md">
+          <input
+            type="text"
+            id="searchTemplate"
+            placeholder="Search medication..."
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+          <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+        <select id="categoryFilter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+          <option value="all">All Categories</option>
+          <option value="antibiotics">Antibiotics</option>
+          <option value="painkillers">Pain Management</option>
+          <option value="chronic">Chronic Conditions</option>
+          <option value="vitamins">Vitamins & Supplements</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="flex gap-2">
+        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+          <i class="fa-solid fa-file-import mr-2"></i>Import
+        </button>
+        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+          <i class="fa-solid fa-file-export mr-2"></i>Export
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Common Prescriptions Section -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+      <h3 class="text-lg font-semibold text-gray-800">Commonly Prescribed Medications</h3>
+      <span class="text-sm text-gray-500">Based on your prescription history</span>
+    </div>
+
+    {% if common_prescriptions %}
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {% for prescription in common_prescriptions %}
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all">
+              <div class="flex items-start justify-between">
+                <div>
+                  <h4 class="font-semibold text-gray-900">{{ prescription.medicine }}</h4>
+                  <p class="text-sm text-gray-600">Used {{ prescription.count }} time{{ prescription.count|pluralize }}</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <button class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg" title="Quick Prescribe">
+                    <i class="fa-solid fa-prescription"></i>
+                  </button>
+                  <button class="p-2 text-gray-600 hover:bg-gray-200 rounded-lg" title="Save as Template">
+                    <i class="fa-solid fa-bookmark"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="p-8 text-center text-gray-500">
+        <i class="fa-solid fa-file-prescription text-3xl mb-2"></i>
+        <p>No common prescriptions found yet.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  // Client-side search filter
+  document.getElementById('searchTemplate').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.bg-gray-50');
+    cards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      card.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Search Patients{% endblock %}
+
+{% block header %}Search Patients{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <form method="GET" class="mb-6">
+      <div class="flex space-x-4">
+        <input type="text" name="q" value="{{ query }}" 
+               placeholder="Search by name, username, or email..." 
+               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+        <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+          <i class="fa-solid fa-search mr-2"></i>Search
+        </button>
+      </div>
+    </form>
+
+    {% if query %}
+      <div class="mb-4">
+        <p class="text-gray-600">{{ results_count }} results for "{{ query }}"</p>
+      </div>
+    {% endif %}
+
+    {% if results %}
+      <div class="space-y-3">
+        {% for patient in results %}
+          <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+            <div class="flex items-center space-x-4">
+              <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <span class="text-purple-600 font-semibold">{{ patient.username|first|upper }}</span>
+              </div>
+              <div>
+                <div class="font-medium">{{ patient.get_full_name|default:patient.username }}</div>
+                <div class="text-sm text-gray-600">{{ patient.email|default:"No email" }}</div>
+                <div class="text-xs text-gray-500">{{ patient.total_appointments }} visits</div>
+              </div>
+            </div>
+            <div class="flex space-x-2">
+              <a href="{% url 'appointments:patient_record' patient.id %}" class="text-green-600 hover:text-green-700">
+                <i class="fa-solid fa-file-medical"></i>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% elif query %}
+      <div class="text-center py-8">
+        <i class="fa-solid fa-search text-4xl text-gray-300 mb-3"></i>
+        <p class="text-gray-500">No patients found matching "{{ query }}"</p>
+      </div>
+    {% else %}
+      <div class="text-center py-8">
+        <i class="fa-solid fa-search text-4xl text-gray-300 mb-3"></i>
+        <p class="text-gray-500">Enter a search term to find patients</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+"""

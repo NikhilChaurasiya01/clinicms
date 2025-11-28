@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md text-center">
+  <h2 class="text-xl font-semibold mb-4">Cancel Appointment</h2>
+  <p class="mb-4">Are you sure you want to cancel your appointment with 
+     <b>{{ appointment.doctor.username }}</b> on 
+     <b>{{ appointment.date }} at {{ appointment.time }}</b>?</p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded">
+      Yes, Cancel
+    </button>
+    <a href="{% url 'dashboard_patient' %}" 
+       class="ml-2 bg-gray-300 px-4 py-2 rounded">
+       No, Go Back
+    </a>
+  </form>
+</div>
+{% endblock %}

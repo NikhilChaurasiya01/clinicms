@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}My Schedule - Doctor Dashboard{% endblock %}
+
+{% block header %}My Weekly Schedule{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Week Navigation -->
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold text-gray-800">
+        Week of {{ week_start|date:"M d" }} - {{ week_end|date:"M d, Y" }}
+      </h2>
+      <div class="flex space-x-2">
+        <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+          <i class="fa-solid fa-chevron-left mr-2"></i>Previous Week
+        </button>
+        <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+          Next Week<i class="fa-solid fa-chevron-right ml-2"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Weekly Schedule Grid -->
+    <div class="grid grid-cols-7 gap-4">
+      {% for day, appointments in schedule_by_day.items %}
+        <div class="bg-gray-50 rounded-lg p-4">
+          <div class="text-center mb-3">
+            <div class="text-sm font-semibold text-gray-600">{{ day|date:"D" }}</div>
+            <div class="text-lg font-bold {% if day == today %}text-green-600{% else %}text-gray-800{% endif %}">
+              {{ day|date:"j" }}
+            </div>
+          </div>
+          
+          <div class="space-y-2">
+            {% for appointment in appointments %}
+              <div class="bg-white rounded p-2 border-l-4 {% if appointment.status == 'pending' %}border-yellow-400{% elif appointment.status == 'completed' %}border-green-400{% else %}border-gray-400{% endif %}">
+                <div class="text-xs font-semibold text-gray-600">
+                  {{ appointment.appointment_datetime|date:"H:i" }}
+                </div>
+                <div class="text-sm text-gray-800 truncate">
+                  {{ appointment.patient.username }}
+                </div>
+                <div class="text-xs text-gray-500">
+                  {{ appointment.appointment_type }}
+                </div>
+              </div>
+            {% empty %}
+              <div class="text-sm text-gray-400 text-center py-4">
+                No appointments
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Today's Appointments Detail -->
+  {% if schedule_by_day.today %}
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Today's Appointments</h3>
+    <div class="space-y-3">
+      {% for appointment in schedule_by_day.today %}
+        <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+          <div class="flex items-center space-x-4">
+            <div class="text-center">
+              <div class="text-sm font-semibold">{{ appointment.appointment_datetime|date:"H:i" }}</div>
+              <div class="text-xs text-gray-500">{{ appointment.appointment_datetime|date:"M j" }}</div>
+            </div>
+            <div>
+              <div class="font-medium">{{ appointment.patient.get_full_name|default:appointment.patient.username }}</div>
+              <div class="text-sm text-gray-600">{{ appointment.appointment_type|title }}</div>
+              {% if appointment.symptoms %}
+                <div class="text-sm text-gray-500">{{ appointment.symptoms|truncatewords:10 }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="px-2 py-1 text-xs rounded-full {% if appointment.status == 'pending' %}bg-yellow-100 text-yellow-800{% elif appointment.status == 'completed' %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+              {{ appointment.status|title }}
+            </span>
+            <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="text-green-600 hover:text-green-700">
+              <i class="fa-solid fa-eye"></i>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

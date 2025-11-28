@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block header %}User Analytics{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 mb-8 text-white">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold mb-2">
+          <i class="fa-solid fa-users-cog mr-3"></i>
+          User Analytics
+        </h1>
+        <p class="text-blue-100">Detailed user behavior and engagement metrics</p>
+      </div>
+      <a href="{% url 'dashboard_admin' %}" 
+         class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition duration-200">
+        <i class="fa-solid fa-arrow-left mr-2"></i>
+        Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- User Role Distribution -->
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+      <i class="fa-solid fa-chart-pie mr-2 text-indigo-600"></i>
+      User Role Distribution
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {% for role_data in user_role_distribution %}
+      <div class="bg-gradient-to-br 
+        {% if role_data.role == 'doctor' %}from-blue-50 to-blue-100
+        {% elif role_data.role == 'patient' %}from-green-50 to-green-100
+        {% else %}from-gray-50 to-gray-100{% endif %} 
+        p-6 rounded-lg text-center">
+        <div class="
+          {% if role_data.role == 'doctor' %}bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center
+          {% elif role_data.role == 'patient' %}bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center
+          {% else %}bg-gray-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center{% endif %}">
+          {% if role_data.role == 'doctor' %}
+            <i class="fa-solid fa-user-doctor text-blue-600 text-2xl"></i>
+          {% elif role_data.role == 'patient' %}
+            <i class="fa-solid fa-user text-green-600 text-2xl"></i>
+          {% else %}
+            <i class="fa-solid fa-user text-gray-600 text-2xl"></i>
+          {% endif %}
+        </div>
+        <h4 class="font-semibold text-gray-800 mb-2">{{ role_data.role|title }}s</h4>
+        <p class="text-3xl font-bold 
+          {% if role_data.role == 'doctor' %}text-blue-600
+          {% elif role_data.role == 'patient' %}text-green-600
+          {% else %}text-gray-600{% endif %}">
+          {{ role_data.count }}
+        </p>
+        <p class="text-sm text-gray-600 mt-1">Total registered</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Charts and Analytics -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Registration Chart -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-chart-line mr-2 text-blue-600"></i>
+        User Registrations (Last 30 Days)
+      </h3>
+      <div class="h-64">
+        <canvas id="registrationChart" class="w-full h-full"></canvas>
+      </div>
+    </div>
+
+    <!-- Role Distribution Chart -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-chart-pie mr-2 text-purple-600"></i>
+        User Role Distribution
+      </h3>
+      <div class="h-64 flex items-center justify-center">
+        <canvas id="roleChart" class="max-w-full max-h-full"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Activity Tables -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Most Active Patients -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-user-plus mr-2 text-green-600"></i>
+        Most Active Patients
+      </h3>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">Patient</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">Appointments</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for patient in most_active_patients %}
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+              <td class="py-3 px-4">
+                <div class="flex items-center">
+                  <div class="bg-green-100 p-2 rounded-full mr-3">
+                    <i class="fa-solid fa-user text-green-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900">{{ patient.get_full_name|default:patient.username }}</p>
+                    <p class="text-sm text-gray-600">@{{ patient.username }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ patient.appointment_count }}
+                </span>
+              </td>
+              <td class="py-3 px-4">
+                {% if patient.is_active %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="fa-solid fa-check mr-1"></i>
+                    Active
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <i class="fa-solid fa-times mr-1"></i>
+                    Inactive
+                  </span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="py-8 px-4 text-center text-gray-500">
+                <i class="fa-solid fa-users text-4xl mb-4 text-gray-300"></i>
+                <p>No patient data available</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Doctor Productivity -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fa-solid fa-user-doctor mr-2 text-blue-600"></i>
+        Doctor Productivity
+      </h3>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">Doctor</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">Total</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">30d Done</th>
+              <th class="text-left py-3 px-4 font-semibold text-gray-700">Rx</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for doctor in doctor_productivity %}
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+              <td class="py-3 px-4">
+                <div class="flex items-center">
+                  <div class="bg-blue-100 p-2 rounded-full mr-3">
+                    <i class="fa-solid fa-user-doctor text-blue-600"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900">Dr. {{ doctor.get_full_name|default:doctor.username }}</p>
+                    <p class="text-sm text-gray-600">{{ doctor.email|truncatechars:20 }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3 px-4 font-semibold text-gray-800">{{ doctor.total_appointments }}</td>
+              <td class="py-3 px-4 font-semibold text-green-600">{{ doctor.completed_this_month }}</td>
+              <td class="py-3 px-4 font-semibold text-purple-600">{{ doctor.total_prescriptions }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="py-8 px-4 text-center text-gray-500">
+                <i class="fa-solid fa-user-doctor text-4xl mb-4 text-gray-300"></i>
+                <p>No doctor data available</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Registration Timeline -->
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+      <i class="fa-solid fa-timeline mr-2 text-orange-600"></i>
+      Registration Timeline (Last 30 Days)
+    </h3>
+    <div class="space-y-4">
+      {% for day_data in registration_by_day|slice:":10" %}
+      <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div class="flex items-center">
+          <div class="bg-orange-100 p-2 rounded-full mr-3">
+            <i class="fa-solid fa-calendar text-orange-600"></i>
+          </div>
+          <div>
+            <p class="font-medium text-gray-800">{{ day_data.day|date:"M d, Y" }}</p>
+            <p class="text-sm text-gray-600">{{ day_data.day|date:"l" }}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            {{ day_data.count }} users
+          </span>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-8 text-gray-500">
+        <i class="fa-solid fa-calendar text-4xl mb-4 text-gray-300"></i>
+        <p>No registration data available</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Registration by Day Chart
+  const registrationData = {{ registration_by_day|safe }};
+  const regLabels = registrationData.map(r => {
+    const date = new Date(r.day);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  });
+  const regCounts = registrationData.map(r => r.count);
+
+  new Chart(document.getElementById("registrationChart"), {
+    type: "line",
+    data: {
+      labels: regLabels,
+      datasets: [{
+        label: "New Registrations",
+        data: regCounts,
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59, 130, 246, 0.2)",
+        tension: 0.3,
+        fill: true,
+        pointBackgroundColor: "#3b82f6",
+        pointBorderColor: "#ffffff",
+        pointBorderWidth: 2,
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
+    }
+  });
+
+  // Role Distribution Chart
+  const roleData = {{ user_role_distribution|safe }};
+  const roleLabels = roleData.map(r => r.role.charAt(0).toUpperCase() + r.role.slice(1) + 's');
+  const roleCounts = roleData.map(r => r.count);
+  const roleColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+
+  new Chart(document.getElementById("roleChart"), {
+    type: "doughnut",
+    data: {
+      labels: roleLabels,
+      datasets: [{
+        data: roleCounts,
+        backgroundColor: roleColors.slice(0, roleData.length),
+        borderWidth: 2,
+        borderColor: "#ffffff"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 20,
+            usePointStyle: true
+          }
+        }
+      }
+    }
+  });
+</script>
+{% endblock %}
