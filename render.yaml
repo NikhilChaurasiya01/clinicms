@@ -1,12 +1,9 @@
 services:
   - type: web
     name: clinicms
+    env: python
     runtime: python
-    runtimeVersion: 3.12
-    buildCommand: >
-      pip install -r requirements.txt &&
-      python manage.py collectstatic --noinput &&
-      python manage.py migrate --noinput
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput
     startCommand: gunicorn clinicms.wsgi:application
     plan: free
     envVars:
