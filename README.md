@@ -7,6 +7,10 @@
 
 A comprehensive, modern clinic management system built with Django for managing patients, doctors, appointments, and prescriptions. Features separate portals for different user roles with intuitive dashboards and analytics.
 
+## 🌐 Live Demo
+
+**[View Live Application →](https://clinicms-1-9c9v.onrender.com)**
+
 ![Clinic Management System](https://img.shields.io/badge/Status-Active-success)
 
 ## ✨ Features
